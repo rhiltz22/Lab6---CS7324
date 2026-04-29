@@ -1,0 +1,32 @@
+# Define the augmentation pipeline as a reusable Keras Sequential block
+# This will be prepended to each CNN architecture
+def get_augmentation_layers():
+    return [
+        RandomFlip("horizontal"),
+        RandomRotation(0.1),
+        RandomTranslation(height_factor=0.1, width_factor=0.1),
+        RandomZoom((-0.1, 0.1)),
+        RandomContrast(0.1),
+    ]
+
+# Visualize the effect of augmentation on one sample image
+aug_preview = keras.Sequential(get_augmentation_layers())
+
+sample_img = sample_images[0:1]  # shape (1, H, W, 3)
+
+plt.figure(figsize=(14, 4))
+plt.subplot(1, 9, 1)
+plt.imshow(sample_img[0].numpy())
+plt.title('Original', fontsize=8)
+plt.axis('off')
+
+for i in range(8):
+    aug_img = aug_preview(sample_img, training=True)
+    plt.subplot(1, 9, i+2)
+    plt.imshow(aug_img[0].numpy())
+    plt.title(f'Aug {i+1}', fontsize=8)
+    plt.axis('off')
+
+plt.suptitle(f'Augmentation Examples — Sport: {class_names[sample_labels[0].numpy()]}', fontsize=11)
+plt.tight_layout()
+plt.show()
