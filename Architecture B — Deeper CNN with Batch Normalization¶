@@ -60,3 +60,38 @@ def build_arch_b(num_blocks=2, name='CNN_B'):
 # CNN-B1: 2 convolutional blocks
 cnn_b1 = build_arch_b(num_blocks=2, name='CNN_B1_2blocks')
 cnn_b1.summary()
+
+
+# test
+
+%%time
+
+history_b1 = cnn_b1.fit(
+    ds_train,
+    epochs=50,
+    verbose=1,
+    validation_data=ds_valid,
+    callbacks=[
+        EarlyStopping(monitor='val_loss', patience=7, restore_best_weights=True),
+        ModelCheckpoint('models/cnn_b1.keras', save_best_only=True, monitor='val_loss')
+    ]
+)
+plot_history(history_b1, title='CNN-B1 (2 blocks + BatchNorm)')
+
+
+%%time
+
+# CNN-B2: 3 convolutional blocks 
+cnn_b2 = build_arch_b(num_blocks=3, name='CNN_B2_3blocks')
+
+history_b2 = cnn_b2.fit(
+    ds_train,
+    epochs=50,
+    verbose=1,
+    validation_data=ds_valid,
+    callbacks=[
+        EarlyStopping(monitor='val_loss', patience=7, restore_best_weights=True),
+        ModelCheckpoint('models/cnn_b2.keras', save_best_only=True, monitor='val_loss')
+    ]
+)
+plot_history(history_b2, title='CNN-B2 (3 blocks + BatchNorm)')
