@@ -1,0 +1,14 @@
+# Grab one batch to visualize
+sample_images, sample_labels = next(iter(ds_train))
+
+plt.figure(figsize=(14, 6))
+for i in range(18):
+    plt.subplot(3, 6, i+1)
+    plt.imshow(sample_images[i].numpy())
+    plt.title(class_names[sample_labels[i].numpy()], fontsize=7)
+    plt.axis('off')
+plt.suptitle('Sample Training Images (normalized)', fontsize=12)
+plt.tight_layout()
+plt.show()
+
+print(f'Image shape: {sample_images[0].shape}')
