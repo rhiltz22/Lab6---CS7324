@@ -1,0 +1,84 @@
+# Helper functions for plotting training history, computing metrics, and comparing models.
+
+def plot_history(history, title=''):
+    """Plot training/validation accuracy and loss curves."""
+    plt.figure(figsize=(12, 4))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['accuracy'],     label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.title(f'Accuracy — {title}')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['loss'],     label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Val Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.title(f'Loss — {title}')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def get_predictions(model, ds):
+    """Run model on a tf.data.Dataset and return true labels and predicted probabilities."""
+    y_true, y_prob = [], []
+    for images, labels in ds:
+        probs = model.predict(images, verbose=0)
+        y_true.append(labels.numpy())
+        y_prob.append(probs)
+    y_true = np.concatenate(y_true, axis=0)
+    y_prob = np.concatenate(y_prob, axis=0)
+    y_pred = np.argmax(y_prob, axis=1)
+    return y_true, y_pred, y_prob
+
+
+def evaluate_model(model, ds, model_name='Model'):
+    """Print classification report with macro-F1, accuracy, and confusion matrix."""
+    y_true, y_pred, y_prob = get_predictions(model, ds)
+
+    acc     = mt.accuracy_score(y_true, y_pred)
+    macro_f1 = mt.f1_score(y_true, y_pred, average='macro', zero_division=0)
+
+    print(f'\n=== {model_name} ===')
+    print(f'  Accuracy      : {acc:.4f}')
+    print(f'  Macro F1-Score: {macro_f1:.4f}')
+    print()
+    return y_true, y_pred, y_prob, macro_f1
+
+
+def plot_confusion_matrix(y_true, y_pred, model_name='Model', figsize=(12, 10)):
+    """Plot normalized confusion matrix."""
+    cm = mt.confusion_matrix(y_true, y_pred)
+    cm_norm = cm.astype(float) / (cm.sum(axis=1)[:, np.newaxis] + 1e-6)
+
+    plt.figure(figsize=figsize)
+    sns.heatmap(cm_norm, annot=False, cmap='Blues', vmin=0, vmax=1)
+    plt.title(f'Normalized Confusion Matrix — {model_name}')
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.tight_layout()
+    plt.show()
+
+
+def compare_models_bar(results_dict):
+    """Bar chart comparing macro-F1 across all models."""
+    names  = list(results_dict.keys())
+    scores = [results_dict[n] for n in names]
+
+    plt.figure(figsize=(10, 5))
+    bars = plt.bar(names, scores, color='steelblue', edgecolor='black')
+    plt.ylim(0, 1.0)
+    plt.ylabel('Macro F1-Score')
+    plt.title('Model Comparison — Macro-Averaged F1-Score on Test Set')
+    for bar, score in zip(bars, scores):
+        plt.text(bar.get_x() + bar.get_width()/2,
+                 bar.get_height() + 0.01,
+                 f'{score:.3f}', ha='center', fontsize=10)
+    plt.xticks(rotation=15, ha='right')
+    plt.tight_layout()
+    plt.show()
