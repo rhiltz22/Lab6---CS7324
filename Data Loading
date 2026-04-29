@@ -1,12 +1,12 @@
 # Configuration 
-DATA_DIR   = "/Users/ryanhiltz/sports.csv"  
+DATA_DIR = path
 IMAGE_SIZE = (64, 64)        # resize to 64x64; change to (224, 224) if compute allows
 BATCH_SIZE = 32
 NUM_CLASSES = 100
 
 # Load pre-defined splits 
 ds_train = tf.keras.utils.image_dataset_from_directory(
-    os.path.join(DATA_DIR, 'train'),
+    os.path.join(DATA_DIR),
     labels='inferred',
     label_mode='int',
     image_size=IMAGE_SIZE,
