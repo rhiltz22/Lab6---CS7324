@@ -1,0 +1,54 @@
+# Configuration 
+DATA_DIR   = "/Users/ryanhiltz/sports.csv"  
+IMAGE_SIZE = (64, 64)        # resize to 64x64; change to (224, 224) if compute allows
+BATCH_SIZE = 32
+NUM_CLASSES = 100
+
+# Load pre-defined splits 
+ds_train = tf.keras.utils.image_dataset_from_directory(
+    os.path.join(DATA_DIR, 'train'),
+    labels='inferred',
+    label_mode='int',
+    image_size=IMAGE_SIZE,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    seed=42
+)
+
+class_names = ds_train.class_names  # save sport labels
+print(f'Number of classes: {len(class_names)}')
+print(f'First 10 classes: {class_names[:10]}')
+
+ds_valid = tf.keras.utils.image_dataset_from_directory(
+    os.path.join(DATA_DIR, 'valid'),
+    labels='inferred',
+    label_mode='int',
+    image_size=IMAGE_SIZE,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    seed=42
+)
+
+ds_test = tf.keras.utils.image_dataset_from_directory(
+    os.path.join(DATA_DIR, 'test'),
+    labels='inferred',
+    label_mode='int',
+    image_size=IMAGE_SIZE,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    seed=42
+)
+
+# Normalize pixel values from [0, 255] → [0.0, 1.0]
+def normalize_image(image, label):
+    image = tf.cast(image, tf.float32) / 255.0
+    return image, label
+
+ds_train = ds_train.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
+ds_valid = ds_valid.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
+ds_test  = ds_test.map(normalize_image,  num_parallel_calls=tf.data.AUTOTUNE)
+
+# Cache and prefetch for performance
+ds_train = ds_train.prefetch(tf.data.AUTOTUNE)
+ds_valid = ds_valid.prefetch(tf.data.AUTOTUNE)
+ds_test  = ds_test.prefetch(tf.data.AUTOTUNE)
