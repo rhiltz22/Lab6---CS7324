@@ -1,0 +1,16 @@
+The Sports Classification dataset comes with pre-defined train, validation, and test splits. We will use these splits directly rather than re-splitting the data ourselves.
+
+Why use the pre-defined split?
+
+1. Realistic deployment mirroring: In practice, a model trained on historical sports footage would be evaluated on new footage it has never seen. The pre-defined test set fulfills this role cleanly — the model never touches test images during training or hyperparameter tuning.
+
+2. Avoiding augmentation data leakage: If we shuffled all data and then split, augmented versions of training images could end up in the test set (or share the same original image). Using the pre-defined split avoids this leakage entirely.
+
+3. Reproducibility: A fixed split means any researcher with the same Kaggle dataset can reproduce our exact results.
+
+4. Why not k-fold cross-validation? While stratified k-fold CV is generally excellent for smaller datasets, it is computationally prohibitive here: with ~14,000 images across 100 classes and training CNNs that may take 20–60 minutes per run, performing 10-fold CV would require ~200–600 hours of compute. The held-out test set of ~500 images (5 per class) is sufficient to evaluate generalization for our purposes.
+
+Role of each split:
+- train -> used for model fitting and backpropagation  
+- valid -> used to monitor overfitting, tune hyperparameters, and apply early stopping  
+- test -> used once only at the end for final metric reporting
