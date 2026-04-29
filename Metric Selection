@@ -1,0 +1,10 @@
+For this 100-class sports classification task, we argue that macro-averaged F1-score is the most appropriate primary metric, supported by per-class accuracy as a secondary diagnostic.
+
+Why not plain accuracy?
+Accuracy treats all 100 classes equally in terms of *count*, but if some sport categories have slightly fewer images than others, accuracy can be inflated by good performance on larger classes. More importantly, from a business perspective, a sports media company or athletic analytics platform deploying this classifier would care equally about correctly identifying any sport — misclassifying archery as shooting is just as costly as misclassifying tennis as badminton. Accuracy does not directly capture this balance.
+
+Why macro-F1?
+Macro-averaged F1-score computes F1 independently for each class and then averages those scores. This means every sport class carries equal weight in the final metric, regardless of how many images it has. F1 itself balances precision (when we predict 'basketball', are we right?) and recall(when it is basketball, do we catch it?). For a real-world sports classification application — say, auto-tagging game footage or filtering sports content on a streaming platform — both false positives and false negatives matter equally, making F1 ideal.
+
+Why ROC-AUC for the MLP comparison? 
+The assignment requires a ROC-AUC comparison between CNNs and an MLP. ROC-AUC (computed one-vs-rest for multi-class) measures the model's ability to discriminate between each class and all others across all decision thresholds. This is a threshold-independent metric and provides a strong measure of the model's overall discriminative power, independent of any particular cutoff choice.
