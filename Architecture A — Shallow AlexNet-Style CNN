@@ -60,3 +60,37 @@ def build_arch_a(num_filters=64, name='CNN_A'):
 # CNN-A1: 64 initial filters 
 cnn_a1 = build_arch_a(num_filters=64, name='CNN_A1_64filters')
 cnn_a1.summary()
+
+# test
+%%time
+
+os.makedirs('models', exist_ok=True)
+
+history_a1 = cnn_a1.fit(
+    ds_train,
+    epochs=50,
+    verbose=1,
+    validation_data=ds_valid,
+    callbacks=[
+        EarlyStopping(monitor='val_loss', patience=7, restore_best_weights=True),
+        ModelCheckpoint('models/cnn_a1.keras', save_best_only=True, monitor='val_loss')
+    ]
+)
+plot_history(history_a1, title='CNN-A1 (64 filters)')
+
+
+# CNN-A2: 128 initial filters 
+cnn_a2 = build_arch_a(num_filters=128, name='CNN_A2_128filters')
+
+history_a2 = cnn_a2.fit(
+    ds_train,
+    epochs=50,
+    verbose=1,
+    validation_data=ds_valid,
+    callbacks=[
+        EarlyStopping(monitor='val_loss', patience=7, restore_best_weights=True),
+        ModelCheckpoint('models/cnn_a2.keras', save_best_only=True, monitor='val_loss')
+    ]
+)
+plot_history(history_a2, title='CNN-A2 (128 filters)')
+
