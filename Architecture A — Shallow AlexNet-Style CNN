@@ -1,0 +1,62 @@
+# Architecture A is a straightforward sequential CNN inspired by AlexNet: stacked Conv2D layers with ReLU, MaxPooling for spatial downsampling, and dense layers at the head.
+# We vary the number of initial filters (64 vs 128) to study how filter capacity affects performance.
+
+def build_arch_a(num_filters=64, name='CNN_A'):
+    """
+    Architecture A: Shallow AlexNet-style CNN.
+    Parameter varied: num_filters (initial conv filter count).
+    """
+    model = Sequential(name=name)
+    model.add(Input(shape=(*IMAGE_SIZE, 3)))
+
+    # Augmentation (active only during training) 
+    for layer in get_augmentation_layers():
+        model.add(layer)
+
+    # Convolutional Block 1 
+    model.add(Conv2D(filters=num_filters,
+                     kernel_size=(5, 5),
+                     padding='same',
+                     activation='relu',
+                     kernel_initializer='he_uniform',
+                     kernel_regularizer=l2(1e-5)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # Convolutional Block 2 
+    model.add(Conv2D(filters=num_filters * 2,
+                     kernel_size=(3, 3),
+                     padding='same',
+                     activation='relu',
+                     kernel_initializer='he_uniform',
+                     kernel_regularizer=l2(1e-5)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # Convolutional Block 3 
+    model.add(Conv2D(filters=num_filters * 4,
+                     kernel_size=(3, 3),
+                     padding='same',
+                     activation='relu',
+                     kernel_initializer='he_uniform',
+                     kernel_regularizer=l2(1e-5)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # Classifier Head 
+    model.add(Flatten())
+    model.add(Dense(512, activation='relu',
+                    kernel_initializer='he_uniform',
+                    kernel_regularizer=l2(1e-4)))
+    model.add(Dropout(0.5))
+    model.add(Dense(NUM_CLASSES, activation='softmax',
+                    kernel_initializer='glorot_uniform'))
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    return model
+
+
+# CNN-A1: 64 initial filters 
+cnn_a1 = build_arch_a(num_filters=64, name='CNN_A1_64filters')
+cnn_a1.summary()
