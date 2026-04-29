@@ -1,0 +1,62 @@
+# Architecture B adds BatchNormalization after each convolutional block, which normalizes layer outputs and has been shown to stabilize training, allow higher learning rates, and act as a form of regularization. 
+# We vary the number of convolutional blocks (2 vs 3) to study the effect of network depth.
+
+def build_arch_b(num_blocks=2, name='CNN_B'):
+    """
+    Architecture B: Deeper CNN with BatchNormalization.
+    Parameter varied: num_blocks (number of conv+bn+pool blocks).
+    """
+    model = Sequential(name=name)
+    model.add(Input(shape=(*IMAGE_SIZE, 3)))
+
+    # Augmentation 
+    for layer in get_augmentation_layers():
+        model.add(layer)
+
+    # Dynamic number of convolutional blocks 
+    filter_schedule = [32, 64, 128, 256]  # filter counts per block
+
+    for block_idx in range(num_blocks):
+        num_f = filter_schedule[block_idx]
+
+        # First conv in block
+        model.add(Conv2D(filters=num_f,
+                         kernel_size=(3, 3),
+                         padding='same',
+                         activation='relu',
+                         kernel_initializer='he_uniform',
+                         kernel_regularizer=l2(1e-5)))
+        model.add(BatchNormalization())
+
+        # Second conv in block (same filter count)
+        model.add(Conv2D(filters=num_f,
+                         kernel_size=(3, 3),
+                         padding='same',
+                         activation='relu',
+                         kernel_initializer='he_uniform',
+                         kernel_regularizer=l2(1e-5)))
+        model.add(BatchNormalization())
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.25))
+
+    # Classifier Head 
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu',
+                    kernel_initializer='he_uniform',
+                    kernel_regularizer=l2(1e-4)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    model.add(Dense(NUM_CLASSES, activation='softmax',
+                    kernel_initializer='glorot_uniform'))
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    return model
+
+
+# CNN-B1: 2 convolutional blocks
+cnn_b1 = build_arch_b(num_blocks=2, name='CNN_B1_2blocks')
+cnn_b1.summary()
